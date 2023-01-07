@@ -32,15 +32,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     EditText suma;
     String wybranaWaluta;
     float srednia;
-    TextView rezultat;
-
+    TextView rezultat, data;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        data = findViewById(R.id.Data);
+        JodaTime jd = new JodaTime();
+        data.setText(jd.jodaTime());
 
         konwertuj = findViewById(R.id.buttonKonwertuj);
         rezultat = findViewById(R.id.textViewResult);
