@@ -1,6 +1,12 @@
 package com.example.mobileproject;
+import static java.lang.String.valueOf;
+
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -29,7 +35,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     Button konwertuj;
-    EditText suma;
+    EditText wartosc;
     String wybranaWaluta;
     float srednia;
     TextView rezultat, data;
@@ -45,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         konwertuj = findViewById(R.id.buttonKonwertuj);
         rezultat = findViewById(R.id.textViewResult);
-        suma = findViewById(R.id.editTextNumberPLN);
+        wartosc = findViewById(R.id.editTextNumberPLN);
 
         Spinner Waluta = (Spinner) findViewById(R.id.spinnerWaluta);
         Waluta.setOnItemSelectedListener(this);
@@ -89,6 +95,37 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, list);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         Waluta.setAdapter(adapter);
+
+
+
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        Sensor szejker = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        SensorEventListener sensorEventListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+
+                if(sensorEvent != null){
+                    float x_accl = sensorEvent.values[0];
+                    float y_accl = sensorEvent.values[1];
+                    float z_accl = sensorEvent.values[2];
+
+                    if(y_accl > 14 || y_accl < -14){
+                        wartosc.setText(losuj());
+                    }
+                }
+
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        };
+
+        sensorManager.registerListener(sensorEventListener, szejker, SensorManager.SENSOR_DELAY_NORMAL);
+
     }
 
     @Override
@@ -139,11 +176,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 JSONArray array = new JSONArray(rates);
                 JSONObject mid = array.getJSONObject(0);
                 srednia = (float) mid.getDouble("mid");
-                if(suma.getText().toString().isEmpty()){
-                    suma.setText("1");
+                if(wartosc.getText().toString().isEmpty()){
+                    wartosc.setText("1");
                 }
-                float f = (float) (Float.parseFloat(suma.getText().toString()) / srednia);
-                rezultat.setText(String.valueOf(suma.getText()+" PLN to " +String.format("%.2f",f)+ " " + wybranaWaluta));
+                float f = (float) (Float.parseFloat(wartosc.getText().toString()) / srednia);
+                rezultat.setText(valueOf(wartosc.getText()+" PLN to " +String.format("%.2f",f)+ " " + wybranaWaluta));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -156,5 +193,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         DownloadTask task = new DownloadTask();
         task.execute(wybranaWaluta);
 
+    }
+
+    public String losuj(){
+        int l = (int) (Math.random()*100);
+        int p = (int) (Math.random()*100);
+        String value = l + "." + p;
+        return value;
     }
 }
